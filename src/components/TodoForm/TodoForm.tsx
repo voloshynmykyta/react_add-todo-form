@@ -27,8 +27,10 @@ export const TodoForm: React.FC<TodoFormProps> = ({
     setUserErrorMessage('');
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const safeUsers: User[] = Array.isArray(users) ? users : [];
+
+  const handleSubmit = (changeEvent: React.FormEvent<HTMLFormElement>) => {
+    changeEvent.preventDefault();
 
     if (!title.trim()) {
       setTitleErrorMessage('Please enter a title');
@@ -39,6 +41,12 @@ export const TodoForm: React.FC<TodoFormProps> = ({
     }
 
     if (!title.trim() || !userId) {
+      return;
+    }
+
+    if (safeUsers.length === 0) {
+      setUserErrorMessage('Users are not loaded yet');
+
       return;
     }
 
@@ -53,17 +61,25 @@ export const TodoForm: React.FC<TodoFormProps> = ({
     reset();
   };
 
-  const handleChangeTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
+  const handleChangeTitle = (
+    changeEvent: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setTitle(changeEvent.target.value);
 
     setTitleErrorMessage('');
   };
 
-  const handleChangeUser = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setUserId(Number(e.target.value));
+  const handleChangeUser = (
+    changeEvent: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    setUserId(Number(changeEvent.target.value));
 
     setUserErrorMessage('');
   };
+
+  if (!Array.isArray(users) || safeUsers.length === 0) {
+    return <div className="TodoForm--loading">Loading users…</div>;
+  }
 
   return (
     <form action="/api/todos" method="POST" onSubmit={handleSubmit}>
@@ -94,14 +110,15 @@ export const TodoForm: React.FC<TodoFormProps> = ({
             value={userId}
             onChange={handleChangeUser}
           >
-            <option value="0" disabled>
+            <option value={0} disabled>
               Choose a user
             </option>
-            {users.map(userOption => (
-              <option key={userOption.id} value={userOption.id}>
-                {userOption.name}
-              </option>
-            ))}
+            {users.length > 0 &&
+              users.map(userOption => (
+                <option key={userOption.id} value={userOption.id}>
+                  {userOption.name}
+                </option>
+              ))}
           </select>
         </label>
 

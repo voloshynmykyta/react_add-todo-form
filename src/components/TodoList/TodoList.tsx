@@ -7,6 +7,10 @@ interface TodoListProps {
 }
 
 export const TodoList: React.FC<TodoListProps> = ({ todos }) => {
+  if (!Array.isArray(todos) || todos.length === 0) {
+    return <section className="TodoList TodoList--empty">No todos</section>; // або null
+  }
+
   return (
     <section className="TodoList">
       {todos.map(todo => (
